@@ -36,9 +36,13 @@ if(!TOKEN) {
             if(userId) {
                 const user = await UserModel.findOne({tg_id: userId, group_id: chatId}).exec();
                 if(!user) {
-                    const member = await bot.getChatMember(chatId, userId);
-                    await addNewMember(chatId, member.user);
-                    console.log(`${member.user.username ?? ""} (${member.user.first_name ?? ""} ${member.user.last_name ?? ""})`);
+                    try {
+                        const member = await bot.getChatMember(chatId, userId);
+                        await addNewMember(chatId, member.user);
+                        console.log(`${member.user.username ?? ""} (${member.user.first_name ?? ""} ${member.user.last_name ?? ""})`);
+                    } catch (e) {
+                        console.log(`Error adding user ${userId}`);
+                    }
                 }
             }
         }
