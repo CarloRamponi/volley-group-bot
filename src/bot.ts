@@ -3,6 +3,7 @@ import { default as TelegramBot } from "node-telegram-bot-api";
 import { connect } from "./db/database";
 import GroupModel from "./db/models/group.model";
 import UserModel, { User } from "./db/models/user.model";
+const mdEscape = require('markdown-escape');
 
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
@@ -155,7 +156,7 @@ async function kickUsers(bot: TelegramBot, chatId: string|number) {
     }
 
     if(toBeKicked.length > 0) {
-        const usersToString = (users:Array<User>) => users.map((user) => (user.username ? `@${user.username}`: `[${user.first_name}](tg://user?id=${user.tg_id})`)).join("\n");
+        const usersToString = (users:Array<User>) => users.map((user) => (user.username ? `@${mdEscape(user.username)}`: `[${mdEscape(user.first_name)}](tg://user?id=${user.tg_id})`)).join("\n");
         const message_text = `I seguenti utenti sono stati rimossi dal gruppo in seguito a tre ammonizioni:\n\n${usersToString(toBeKicked)}`;
         await bot.sendDocument(chatId, path.join(__dirname, "../img/red.gif"), {
             caption: message_text,
@@ -189,7 +190,7 @@ async function computeStrikes(bot: TelegramBot, chatId: string|number, kick:bool
         }
     }
 
-    const usersToString = (users:Array<User>, prefix:string) => users.map((user) => prefix + (user.username ? `@${user.username}`: `[${user.first_name}](tg://user?id=${user.tg_id})`)).join("\n");
+    const usersToString = (users:Array<User>, prefix:string) => users.map((user) => prefix + (user.username ? `@${mdEscape(user.username)}`: `[${mdEscape(user.first_name)}](tg://user?id=${user.tg_id})`)).join("\n");
     const message_text = `Non rispondere ad un sondaggio comporta un ammonizione, con tre ammonizioni si viene espulsi!\n\nAmmonizioni:\n\n${gialli.length > 0 ? `*Gialli:*\n\n${usersToString(gialli, "🟡 ")}\n\n` : ""}${arancioni.length > 0 ? `*Arancioni:*\n\n${usersToString(arancioni, "🟠 ")}\n\n` : ""}${rossi.length > 0 ? `*Rossi:*\n\n${usersToString(rossi, "🔴 ")}\n\n` : ""}Per azzerare le proprie ammonizioni cliccare il bottone sotto.\n\nGli utenti Rossi verranno espulsi tra 5 minuti!`;
     
     if(messageId) {
