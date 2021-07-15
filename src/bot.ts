@@ -190,14 +190,29 @@ async function computeStrikes(bot: TelegramBot, chatId: string|number, kick:bool
         }
     }
 
-    const usersToString = (users:Array<User>, prefix:string) => users.map((user) => prefix + (user.username ? `@${mdEscape(user.username)}`: `[${mdEscape(user.first_name)}](tg://user?id=${user.tg_id})`)).join("\n");
-    const message_text = `Non rispondere ad un sondaggio comporta un ammonizione, con tre ammonizioni si viene espulsi!\n\nAmmonizioni:\n\n${gialli.length > 0 ? `*Gialli:*\n\n${usersToString(gialli, "🟡 ")}\n\n` : ""}${arancioni.length > 0 ? `*Arancioni:*\n\n${usersToString(arancioni, "🟠 ")}\n\n` : ""}${rossi.length > 0 ? `*Rossi:*\n\n${usersToString(rossi, "🔴 ")}\n\n` : ""}Per azzerare le proprie ammonizioni cliccare il bottone sotto.\n\nGli utenti Rossi verranno espulsi tra 5 minuti!`;
-    
-    if(messageId) {
-        try {
-            await bot.editMessageText(message_text, {
-                chat_id: chatId,
-                message_id: messageId,
+    if(gialli.length > 0 || arancioni.length > 0 || rossi.length > 0) {
+
+        const usersToString = (users:Array<User>, prefix:string) => users.map((user) => prefix + (user.username ? `@${mdEscape(user.username)}`: `[${mdEscape(user.first_name)}](tg://user?id=${user.tg_id})`)).join("\n");
+        const message_text = `Non rispondere ad un sondaggio comporta un ammonizione, con tre ammonizioni si viene espulsi!\n\nAmmonizioni:\n\n${gialli.length > 0 ? `*Gialli:*\n\n${usersToString(gialli, "🟡 ")}\n\n` : ""}${arancioni.length > 0 ? `*Arancioni:*\n\n${usersToString(arancioni, "🟠 ")}\n\n` : ""}${rossi.length > 0 ? `*Rossi:*\n\n${usersToString(rossi, "🔴 ")}\n\n` : ""}Per azzerare le proprie ammonizioni cliccare il bottone sotto.\n\nGli utenti Rossi verranno espulsi tra 5 minuti!`;
+        
+        if(messageId) {
+            try {
+                await bot.editMessageText(message_text, {
+                    chat_id: chatId,
+                    message_id: messageId,
+                    parse_mode: "Markdown",
+                    reply_markup: {
+                        inline_keyboard: [[{
+                            text: "VAR",
+                            callback_data: "var_cb"
+                        }]]
+                    }
+                });
+            } catch(e) {
+                console.log("Message not modified");
+            }
+        } else {
+            await bot.sendMessage(chatId, message_text, {
                 parse_mode: "Markdown",
                 reply_markup: {
                     inline_keyboard: [[{
@@ -206,22 +221,13 @@ async function computeStrikes(bot: TelegramBot, chatId: string|number, kick:bool
                     }]]
                 }
             });
-        } catch(e) {
-            console.log("Message not modified");
-        }
-    } else {
-        await bot.sendMessage(chatId, message_text, {
-            parse_mode: "Markdown",
-            reply_markup: {
-                inline_keyboard: [[{
-                    text: "VAR",
-                    callback_data: "var_cb"
-                }]]
+            if(kick) {
+                setTimeout(() => kickUsers(bot, chatId), KICK_TIME);
             }
-        });
-        if(kick) {
-            setTimeout(() => kickUsers(bot, chatId), KICK_TIME);
         }
+
+    } else {
+        await bot.sendMessage(chatId, "Nessun utente è attualmente ammonito, congratulazioni.");
     }
 }
 
