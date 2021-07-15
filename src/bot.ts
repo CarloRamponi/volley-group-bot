@@ -167,7 +167,7 @@ async function kickUsers(bot: TelegramBot, chatId: string|number) {
 
 async function computeStrikes(bot: TelegramBot, chatId: string|number, kick:boolean = false, messageId?: number) {
 
-    const users:Array<User> = await UserModel.find().exec();
+    const users:Array<User> = await UserModel.find({group_id: chatId}).exec();
     
     const gialli = [];
     const arancioni = [];
