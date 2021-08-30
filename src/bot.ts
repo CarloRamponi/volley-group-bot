@@ -169,6 +169,10 @@ if(!TOKEN) {
                         await bot.unpinChatMessage(chatId, {
                             message_id: msg.reply_to_message.message_id
                         });
+
+                        await bot.sendMessage(chatId, "Sondaggio annullato", {
+                            reply_to_message_id: msg.reply_to_message.message_id
+                        });
     
                     } else {
                         await bot.sendMessage(chatId, "Comando riservato agli admin", {
