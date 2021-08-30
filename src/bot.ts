@@ -52,6 +52,29 @@ if(!TOKEN) {
 
         });
 
+        bot.onText(/\/echo (.+)/, async (msg, match) => {
+
+            const chatId = msg.chat.id;
+
+            if(chatId < 0) {
+                if(msg.from) {
+
+                    const user = await bot.getChatMember(chatId, msg.from.id.toString());
+                    if(user.status == "creator" || user.status == "administrator") {
+                    
+                        await bot.deleteMessage(chatId, msg.message_id.toString());
+
+                        const text = match?.slice(1).join(" ");
+                        if(text) {
+                            await bot.sendMessage(chatId, text);
+                        }
+                    
+                    }
+                }
+            }
+
+        });
+
         bot.onText(/\/partita (.+)/, async (msg, match) => {
 
             const chatId = msg.chat.id;
