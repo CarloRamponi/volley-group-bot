@@ -11,8 +11,7 @@ const GroupSchema = new Schema({
         type: String,
         unique: true
     },
-    title: String,
-    activePolls: [Number]
+    title: String
 });
 
 const GroupModel = model("group", GroupSchema);

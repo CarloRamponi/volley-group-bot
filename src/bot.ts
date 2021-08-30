@@ -1,8 +1,9 @@
 import { default as path } from "path";
-import { default as TelegramBot } from "node-telegram-bot-api";
+import { default as TelegramBot, Poll } from "node-telegram-bot-api";
 import { connect } from "./db/database";
 import GroupModel from "./db/models/group.model";
 import UserModel, { User } from "./db/models/user.model";
+import PollModel, { Poll as MyPoll } from "./db/models/poll.model";
 const mdEscape = require('markdown-escape');
 
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
@@ -63,8 +64,11 @@ if(!TOKEN) {
                         is_anonymous: false
                     });
                     await bot.pinChatMessage(chatId, poll.message_id.toString());
-                    await GroupModel.updateOne({chatId: chatId}, {$push: {activePolls: poll.poll?.id}});
-                    await UserModel.updateMany({group_id: chatId}, {$inc: {strikes: 1}});
+
+                    await PollModel.create({
+                        tg_id: poll.poll?.id,
+                        group_id: chatId,
+                    });
             
                 }
             }
@@ -79,10 +83,12 @@ if(!TOKEN) {
         });
 
         bot.on("poll_answer", async answer => {
-            const group = await GroupModel.findOne({activePolls: answer.poll_id}).exec();
-            await addNewMember(group.chatId, answer.user);
+            const poll:MyPoll = await PollModel.findOne({tg_id: answer.poll_id}).exec();
+            await PollModel.updateOne({_id: poll._id}, {$addToSet: {responses: answer.user.id}});
+            const group = poll.group_id;
             if(group) {
-                await UserModel.updateOne({tg_id: answer.user.id, group_id: group.chatId}, {$set: {strikes: 0}});
+                await addNewMember(group, answer.user);
+                await UserModel.updateOne({tg_id: answer.user.id, group_id: group}, {$set: {strikes: 0}});
             }
         });
 
@@ -103,8 +109,8 @@ if(!TOKEN) {
                         await bot.unpinChatMessage(chatId, {
                             message_id: msg.reply_to_message.message_id
                         });
-    
-                        await GroupModel.updateOne({chatId: chatId}, {$pull: {activePolls: msg.reply_to_message.message_id}});
+
+                        computeStrikesForPoll(msg.reply_to_message.poll.id);
     
                         computeStrikes(bot, chatId, true);
                     } else {
@@ -115,6 +121,40 @@ if(!TOKEN) {
 
                 } else {
                     await bot.sendMessage(chatId, "Per fermare un sondaggio manda questo comando in risposta al messaggio contenente il sondaggio", {
+                        reply_to_message_id: msg.message_id
+                    });
+                }
+            }
+
+        });
+
+        bot.onText(/\/cancel/, async (msg) => {
+
+            const chatId = msg.chat.id;
+
+            if(chatId < 0) {
+
+                if(msg.reply_to_message && msg.reply_to_message.poll && msg.from) {
+
+                    const user = await bot.getChatMember(chatId, msg.from?.id.toString());
+                    if(user.status == "creator" || user.status == "administrator") {
+                        await bot.deleteMessage(chatId, msg.message_id.toString());
+                        await bot.stopPoll(chatId, msg.reply_to_message.message_id);
+                        await PollModel.findOneAndRemove({tg_id: msg.reply_to_message.message_id});
+                        
+                        //@ts-ignore
+                        await bot.unpinChatMessage(chatId, {
+                            message_id: msg.reply_to_message.message_id
+                        });
+    
+                    } else {
+                        await bot.sendMessage(chatId, "Comando riservato agli admin", {
+                            reply_to_message_id: msg.message_id
+                        });
+                    }
+
+                } else {
+                    await bot.sendMessage(chatId, "Per annullare un sondaggio manda questo comando in risposta al messaggio contenente il sondaggio", {
                         reply_to_message_id: msg.message_id
                     });
                 }
@@ -163,6 +203,21 @@ async function kickUsers(bot: TelegramBot, chatId: string|number) {
             parse_mode: "Markdown"
         });
     }
+}
+
+async function computeStrikesForPoll(poll_id: String) {
+
+    const poll:MyPoll = await PollModel.findOne({tg_id: poll_id}).exec();
+    const users:Array<User> = await UserModel.find({group_id: poll.group_id}).exec();
+
+    for(const user of users) {
+        if(user.tg_id) {
+            if(!poll.responses?.includes(user.tg_id)) {
+                await UserModel.updateOne({_id: user._id}, {$inc: {strikes: 1}});
+            }
+        }
+    }
+
 }
 
 async function computeStrikes(bot: TelegramBot, chatId: string|number, kick:boolean = false, messageId?: number) {
