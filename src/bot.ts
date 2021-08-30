@@ -133,9 +133,8 @@ if(!TOKEN) {
                             message_id: msg.reply_to_message.message_id
                         });
 
-                        computeStrikesForPoll(msg.reply_to_message.poll.id);
-    
-                        computeStrikes(bot, chatId, true);
+                        await computeStrikesForPoll(msg.reply_to_message.poll.id);
+                        await computeStrikes(bot, chatId, true);
                     } else {
                         await bot.sendMessage(chatId, "Comando riservato agli admin", {
                             reply_to_message_id: msg.message_id
