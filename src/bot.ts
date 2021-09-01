@@ -75,7 +75,7 @@ if(!TOKEN) {
 
         });
 
-        bot.onText(/\/partita (.+)/, async (msg, match) => {
+        /*bot.onText(/\/partita (.+)/, async (msg, match) => {
 
             const chatId = msg.chat.id;
             if(chatId < 0) {
@@ -95,7 +95,7 @@ if(!TOKEN) {
             
                 }
             }
-        });
+        });*/
 
         bot.onText(/\/ammonizioni/, async (msg) => {
 
