@@ -233,83 +233,83 @@ async function kickUsers(bot: TelegramBot, chatId: string|number) {
 
 async function computeStrikesForPoll(poll_id: String) {
 
-    const poll:MyPoll = await PollModel.findOne({tg_id: poll_id}).exec();
-    const users:Array<User> = await UserModel.find({group_id: poll.group_id}).exec();
+    // const poll:MyPoll = await PollModel.findOne({tg_id: poll_id}).exec();
+    // const users:Array<User> = await UserModel.find({group_id: poll.group_id}).exec();
 
-    for(const user of users) {
-        if(user.tg_id) {
-            if(!poll.responses?.includes(user.tg_id)) {
-                await UserModel.updateOne({_id: user._id}, {$inc: {strikes: 1}});
-            }
-        }
-    }
+    // for(const user of users) {
+    //     if(user.tg_id) {
+    //         if(!poll.responses?.includes(user.tg_id)) {
+    //             await UserModel.updateOne({_id: user._id}, {$inc: {strikes: 1}});
+    //         }
+    //     }
+    // }
 
 }
 
 async function computeStrikes(bot: TelegramBot, chatId: string|number, kick:boolean = false, messageId?: number) {
 
-    const users:Array<User> = await UserModel.find({group_id: chatId}).exec();
+    // const users:Array<User> = await UserModel.find({group_id: chatId}).exec();
     
-    const gialli = [];
-    const arancioni = [];
-    const rossi = [];
+    // const gialli = [];
+    // const arancioni = [];
+    // const rossi = [];
 
-    for(const user of users) {
-        if(user.tg_id) {
-            const member = await bot.getChatMember(chatId, user.tg_id);
-            if(member.status != "administrator" && member.status != "creator") {
-                if(user.strikes) {
-                    if(user.strikes == 1) {
-                        gialli.push(user);
-                    } else if(user.strikes == 2){
-                        arancioni.push(user);
-                    } else if(user.strikes >= 3) {
-                        rossi.push(user);
-                    }
-                }
-            }
-        }
-    }
+    // for(const user of users) {
+    //     if(user.tg_id) {
+    //         const member = await bot.getChatMember(chatId, user.tg_id);
+    //         if(member.status != "administrator" && member.status != "creator") {
+    //             if(user.strikes) {
+    //                 if(user.strikes == 1) {
+    //                     gialli.push(user);
+    //                 } else if(user.strikes == 2){
+    //                     arancioni.push(user);
+    //                 } else if(user.strikes >= 3) {
+    //                     rossi.push(user);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
-    if(gialli.length > 0 || arancioni.length > 0 || rossi.length > 0) {
+    // if(gialli.length > 0 || arancioni.length > 0 || rossi.length > 0) {
 
-        const usersToString = (users:Array<User>, prefix:string) => users.map((user) => prefix + (user.username ? `@${mdEscape(user.username)}`: `[${mdEscape(user.first_name)}](tg://user?id=${user.tg_id})`)).join("\n");
-        const message_text = `Non rispondere ad un sondaggio comporta un ammonizione, con tre ammonizioni si viene espulsi!\n\nAmmonizioni:\n\n${gialli.length > 0 ? `*Gialli:*\n\n${usersToString(gialli, "🟡 ")}\n\n` : ""}${arancioni.length > 0 ? `*Arancioni:*\n\n${usersToString(arancioni, "🟠 ")}\n\n` : ""}${rossi.length > 0 ? `*Rossi:*\n\n${usersToString(rossi, "🔴 ")}\n\n` : ""}Per azzerare le proprie ammonizioni cliccare il bottone sotto.\n\nGli utenti Rossi verranno espulsi tra 5 minuti!`;
+    //     const usersToString = (users:Array<User>, prefix:string) => users.map((user) => prefix + (user.username ? `@${mdEscape(user.username)}`: `[${mdEscape(user.first_name)}](tg://user?id=${user.tg_id})`)).join("\n");
+    //     const message_text = `Non rispondere ad un sondaggio comporta un ammonizione, con tre ammonizioni si viene espulsi!\n\nAmmonizioni:\n\n${gialli.length > 0 ? `*Gialli:*\n\n${usersToString(gialli, "🟡 ")}\n\n` : ""}${arancioni.length > 0 ? `*Arancioni:*\n\n${usersToString(arancioni, "🟠 ")}\n\n` : ""}${rossi.length > 0 ? `*Rossi:*\n\n${usersToString(rossi, "🔴 ")}\n\n` : ""}Per azzerare le proprie ammonizioni cliccare il bottone sotto.\n\nGli utenti Rossi verranno espulsi tra 5 minuti!`;
         
-        if(messageId) {
-            try {
-                await bot.editMessageText(message_text, {
-                    chat_id: chatId,
-                    message_id: messageId,
-                    parse_mode: "Markdown",
-                    reply_markup: {
-                        inline_keyboard: [[{
-                            text: "VAR",
-                            callback_data: "var_cb"
-                        }]]
-                    }
-                });
-            } catch(e) {
-                console.log("Message not modified");
-            }
-        } else {
-            await bot.sendMessage(chatId, message_text, {
-                parse_mode: "Markdown",
-                reply_markup: {
-                    inline_keyboard: [[{
-                        text: "VAR",
-                        callback_data: "var_cb"
-                    }]]
-                }
-            });
-            if(kick) {
-                setTimeout(() => kickUsers(bot, chatId), KICK_TIME);
-            }
-        }
+    //     if(messageId) {
+    //         try {
+    //             await bot.editMessageText(message_text, {
+    //                 chat_id: chatId,
+    //                 message_id: messageId,
+    //                 parse_mode: "Markdown",
+    //                 reply_markup: {
+    //                     inline_keyboard: [[{
+    //                         text: "VAR",
+    //                         callback_data: "var_cb"
+    //                     }]]
+    //                 }
+    //             });
+    //         } catch(e) {
+    //             console.log("Message not modified");
+    //         }
+    //     } else {
+    //         await bot.sendMessage(chatId, message_text, {
+    //             parse_mode: "Markdown",
+    //             reply_markup: {
+    //                 inline_keyboard: [[{
+    //                     text: "VAR",
+    //                     callback_data: "var_cb"
+    //                 }]]
+    //             }
+    //         });
+    //         if(kick) {
+    //             setTimeout(() => kickUsers(bot, chatId), KICK_TIME);
+    //         }
+    //     }
 
-    } else {
-        await bot.sendMessage(chatId, "Nessun utente è attualmente ammonito, congratulazioni.");
-    }
+    // } else {
+    //     await bot.sendMessage(chatId, "Nessun utente è attualmente ammonito, congratulazioni.");
+    // }
 }
 
 async function addNewMember(chatId:string|number, member:TelegramBot.User):Promise<void> {
