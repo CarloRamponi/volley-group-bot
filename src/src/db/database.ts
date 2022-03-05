@@ -1,21 +1,19 @@
+import { assert } from "console";
 import Mongoose from "mongoose";
 
 let database: Mongoose.Connection;
 
+const MONGO_URL = process.env.MONGO_URL;
+
+assert(MONGO_URL, "MONGO_URL environment variable is not set");
+
 export const connect = async () => {
-  
-  const uri = "mongodb://127.0.0.1:27017/volleybot";
 
   if (database) {
     return;
   }
 
-  await Mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useFindAndModify: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  });
+  await Mongoose.connect(MONGO_URL ?? "");
 
   database = Mongoose.connection;
   database.once("open", async () => {

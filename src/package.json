@@ -1,9 +1,8 @@
 {
   "devDependencies": {
-    "@types/dotenv": "^8.2.0",
-    "@types/mongoose": "^5.11.97",
-    "@types/node-telegram-bot-api": "^0.51.4",
-    "typescript": "^4.3.5"
+    "@types/markdown-escape": "^1.1.0",
+    "@types/node-telegram-bot-api": "^0.56.0",
+    "typescript": "^4.6.2"
   },
   "name": "volley-group-bot",
   "description": "Bot per gestire il gruppo telegram per organizzare partite di pallavolo",
@@ -25,9 +24,8 @@
   },
   "homepage": "https://github.com/CarloRamponi/volley-group-bot#readme",
   "dependencies": {
-    "dotenv": "^10.0.0",
     "markdown-escape": "^1.1.0",
-    "mongoose": "^5.13.2",
-    "node-telegram-bot-api": "^0.53.0"
+    "mongoose": "^6.2.4",
+    "node-telegram-bot-api": "^0.56.0"
   }
 }

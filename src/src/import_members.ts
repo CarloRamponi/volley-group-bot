@@ -10,8 +10,6 @@ import GroupModel from "./db/models/group.model";
 import UserModel from "./db/models/user.model";
 import { default as fs } from "fs";
 
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
-
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 if(!TOKEN) {
     throw new Error("Unable to read TELEGRAM_BOT_TOKEN environment variable");

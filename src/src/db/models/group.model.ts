@@ -3,7 +3,8 @@ import { Schema, model } from "mongoose";
 export interface Group {
     _id?: string,
     chatId?: string,
-    title?: string
+    title?: string,
+    strikes?: boolean
 }
 
 const GroupSchema = new Schema({
@@ -11,7 +12,11 @@ const GroupSchema = new Schema({
         type: String,
         unique: true
     },
-    title: String
+    title: String,
+    strikes: {
+        type: Boolean,
+        default: false
+    }
 });
 
 const GroupModel = model("group", GroupSchema);
